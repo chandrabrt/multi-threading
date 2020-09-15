@@ -565,6 +565,107 @@ If your thread don't want to perform any operation for a particular amount of ti
 ```
 ![](src/com/us/lot/images/sleep.png)
 
+```
+class SlideRotatorSleepExp{
+
+    public static void main(String[] args) throws InterruptedException {
+        for (int i=1; i<=10; i++){
+            System.out.println("Slide-" +i);
+            Thread.sleep(5000);
+        }
+    }
+}
+```
+A Thread can interrupt the sleeping thread or waiting thread by using interrupt()  method of thread class;
+```
+public void interrupt();
+```
+
+**How a thread can interrupt another thread**
+```
+public class InterruptSleepThread extends Thread {
+    @Override
+    public void run() {
+
+        try {
+            for (int i = 1; i <= 10; i++) {
+                System.out.println("I am lazy thread");
+                Thread.sleep(2000);
+            }
+        } catch (InterruptedException e) {
+            System.out.println("I got interrupted");
+        }
+    }
+}
+
+class ThreadInterruptedDemo {
+    public static void main(String[] args) {
+        InterruptSleepThread t = new InterruptSleepThread();
+        t.start();
+
+        t.interrupt(); //main thread interrupt the child thread-----(I)
+        System.out.println("End of main thread");
+    }
+}//output:
+End of main thread
+I am lazy thread
+I got interrupted
+
+```
+In above program, if you comment line(I) the main thread won't interrupt child thread.In this case the child thread execute
+for loop  10 times.
+
+Note:
+- Whenever we are calling interrupt() method if the target thread not in sleeping/waiting state then there is no impact of
+interrupt() call immediately. inturrupt() call will be waiting until target thread enter into sleeping or waiting thread.
+
+-If the target thread sleeping or waiting state then immediately interrupt call will interrupt the target thread.
+
+- If the target thread never enter into sleeping or waiting state in its life-time then there is no impact of interrupt() 
+call. This is the only case where interrupt() call will be waisted.
+```
+public class InterruptThread  extends Thread{
+    @Override
+    public void run() {
+        for (int i = 1; i<10000; i++){
+            System.out.println("I'm lazy thread: "+i);
+        }
+        System.out.println("I want to sleep");
+
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            System.out.println("I got interrupted");
+        }
+    }
+}
+
+class ThreadDemo{
+    public static void main(String[] args) {
+        InterruptThread t = new InterruptThread();
+        t.start();
+
+        t.interrupt();
+        System.out.println("end of main");
+    }
+}
+```
+
+|S.N| property |yield() | join() | sleep|
+|----|------| ------| ------|--------|
+|1 |purpose?|if a thread wants to pause its execution to give the chance for remaining thread of same priority then we should go for yield()|If a thread wants to wait until completing some other thread then we should go for join()|If the thread don't want to perform any operation for a particular amount of time then we should go for sleep()|
+|2|it is overloaded?|no|yes|yes
+|3|it is final?|no|yes|No
+|4|it is throw IE?|no|yes|yes
+|5|it is native?|yes|no|sleep(long ms)--->native, sleep(long ms, int ns)----> no native
+|5|it is static?|yes|no|yes
+
+
+### Synchronization
+
+
+
+
 
 
 
