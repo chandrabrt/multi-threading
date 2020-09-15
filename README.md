@@ -663,9 +663,100 @@ class ThreadDemo{
 
 ### Synchronization
 
+Synchronizer is the modifier applicable only for method on blocks but not for classes and variables.
 
+If multiple threads are trying to operate on the same java object then there may be a chance of data inconsistency problem.
+To overcome this problem should go for synchronizer keyword.
 
+If a method are block declared as a synchronizer then at a time only one thread is allowed to execute that are blocked on the 
+given object so that **data inconsistency** problem will be resolved. 
 
+The main advantage of synchronizer keyword is we can resolve data inconsistency problems, but the main disadvantage of 
+synchronizer keyword is it increase waiting time of thread and creates performance problems. Hence, if there is no specific
+requirement then it is not recommended to use synchronizer keyword.
+
+Internally the synchronization concept is implemented by using lock(). Every object in java has a unique lock.
+Whenever we are using synchronizer keyword then only lock concept will come into the picture.
+
+- If a thread wants to execute synchronizer method on given object first it has to get lock on that object. 
+- Once the thread got the luck then it is allowed to execute any synchronizer method on that object.
+- Once the method execution complete automatically thread releases the lock.
+- Accquiring and releasing the lock internally takes care by JVM and the programmer not responsible this activity.
+
+While a thread executing synchronizer method on the given object the remaining threads are not allowed to execute any synchronizer
+method simultaneously, but the remaining threads are allowed to execute non-synchronization method simultaneously.
+
+```
+class X{
+     synchronized m1();
+     synchronized m2();
+     m3();
+}
+```
+![](src/com/us/lot/images/sync.png)
+
+- Lock concept is implemented based on Object but not based on method.
+
+**Every object in jav there are two areas**: *synchronize area and non-synchronize area*
+
+- **Synchronize** area can be accessed by only one thread at a time
+- **non-Synchronize** area can be accessed by any number of thread simultaneously.
+```
+class X {
+   sync{
+    whereever  we are performing  update operation(ADD/REMOVE/DELETE/REPLACE)
+   i.e where state of object changing
+  }
+  non-sync{
+     where ever state of object won't changed like read() operation
+}
+}
+```
+````
+public class Display {
+
+    public synchronized void wish(String name){
+        for (int i=1; i<=5; i++){
+            System.out.println("Good morning!!");
+            try {
+                Thread.sleep(1000);
+            }catch (InterruptedException ex){
+                ex.printStackTrace();
+            }
+            System.out.println(name);
+        }
+    }
+}
+
+class MyThread extends Thread{
+        Display d;
+        String name;
+
+        public MyThread(Display d, String  name){
+            this.d = d;
+            this.name = name;
+        }
+
+    @Override
+    public void run() {
+        d.wish(name);
+    }
+}
+
+class SynchronizeDemo{
+    public static void main(String[] args) {
+        Display d = new Display();
+        MyThread t = new MyThread(d, "chandra");
+        MyThread t2 = new MyThread(d, "hari");
+        MyThread t3 = new MyThread(d, "john");
+        MyThread t4 = new MyThread(d, "dhoni");
+        t.start();
+        t2.start();
+        t3.start();
+        t4.start();
+    }
+}
+````
 
 
 
