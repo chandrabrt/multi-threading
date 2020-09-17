@@ -46,4 +46,6 @@ class SynchronizeDemo{
         t3.start();
         t4.start();
     }
+
+//    output: regular output
 }

@@ -756,7 +756,110 @@ class SynchronizeDemo{
         t4.start();
     }
 }
+
+output: regular output
 ````
+- **Class level lock**: every class in java has an unique lock which is nothing but class level lock. If a thread wants
+to execute *static synchronized* method, then thread require class level lock. Once a thread got class level then it is
+allowed to execute any static synchronized method of that class.
+
+Once a method execution complete thread releases th lock.
+```
+class X{
+   static sync m1();
+   static sync m2();
+        static m3();
+        sync m4();
+               m5();
+}
+```
+While a thread executing static synchronized method the remaining threads are not allowed to execute any static synchronized
+simultaneously,but remaining threads are allowed to execute the following method simultaneously.
+ - normal static method
+ - synchronize instance method
+ - normal instance method
+
+- **Object level lock**
+
+```
+public class Displays {
+
+    public synchronized void displayn(){
+        for (int i=1; i<=10; i++){
+            System.out.println(i);
+            try {
+                Thread.sleep(2000);
+            }catch (InterruptedException ex){
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    public synchronized void displayc(){
+        for (int i=65; i<=75; i++){
+            System.out.println((char) i);
+            try {
+                Thread.sleep(2000);
+            }catch (InterruptedException ex){
+                ex.printStackTrace();
+            }
+        }
+    }
+}
+
+class MyThreads extends Thread{
+    Displays d;
+
+    public MyThreads(Displays d){
+        this.d = d;
+    }
+
+    @Override
+    public void run() {
+        d.displayn();
+    }
+}
+
+class MyThreads1 extends Thread{
+    Displays d;
+
+    public MyThreads1(Displays d){
+        this.d = d;
+    }
+
+    @Override
+    public void run() {
+        d.displayc();
+    }
+}
+
+class ThreadDemo{
+    public static void main(String[] args) {
+        Displays d = new Displays();
+
+        MyThreads t1 = new MyThreads(d);
+        MyThreads1 t2 = new MyThreads1(d);
+        t1.start();
+        t2.start();
+    }
+}
+//
+1
+2
+...
+10
+A
+B
+..
+J
+K
+```
+
+#### Synchronized block
+
+
+
+
 
 
 
