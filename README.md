@@ -855,7 +855,175 @@ J
 K
 ```
 
-#### Synchronized block
+#### Synchronized block and what is the advantages of synchronization block over synchronization method
+
+If a very few lines of the code synchronization, then it is not recommended to declare entire method as synchronizer. We
+have to enclose those few lines of the code by using synchronizer block.
+
+The main advantage of synchronization block over synchronizer method is it reduces waiting time of thread and improves
+performance of the system.
+
+```
+I) To get lock of current Object
+class X{
+..........
+..........
+synchronize(this){  //  if a thread got the lock of current object(this) then only it is allowed to execute this area
+..........
+}
+..........
+..........
+ }
+
+II) To get lock of particular Object 'b'
+class X{
+..........
+..........
+synchronize(b){  //  if a thread got the lock of particular object(b) then only it is allowed to execute this area
+..........
+}
+..........
+..........
+ }
+
+III) To get class level lock
+class X{
+...........
+sync(Display.class){//if a thread got the class level lock of Display class then only it is allowed to execute this area
+.............
+}
+......
+}
+```
+
+```
+example:
+    public MyThread(Display d, String name){
+        this.d = d;
+        this.name = name;
+    }
+
+    @Override
+    public void run() {
+        d.wish(name);
+    }
+}
+
+class SynchronizeDemo{
+    public static void main(String[] args) {
+        Display d = new Display();
+        MyThread t1 = new MyThread(d, "Jharana");
+        MyThread t2 = new MyThread(d, "Saleena");
+        t1.start();
+        t2.start();
+    }
+}
+//output:
+Good morning
+Jharana
+....
+Good morning
+Saleena
+
+```
+
+Lock concept applicable for object types and class type but not for primitives data types.Hence we can't pass primitive 
+as argument in synchronized block otherwise we will get compile time error saying UnExpected type found,int required 
+reference.
+```
+int x= 0;
+synchronized(x){}
+output: error
+```
+1. What is synchronizer keyword? where we can apply?
+2. Explain advantage of synchronized keyword?
+3. Explain dis-advantage of synchronized keyword?
+4. What is Race Condition?
+
+Ans: If multiple threads are operating simoultaneously on same java object  then there may be a chance of data inconsistency 
+problem.This is called Race condition.
+
+We can overcome this problem by using synchronized keyword.
+
+5. What is Object Lock and  when it is required?
+6. What is class level lock and when it is required?
+7. What are the different between  class level and object level lock?
+8. Is a thread acquire a multiple locks or not?
+
+Ans: Yes of course from different objects.
+```
+class X{
+ public synchronized void m1(){
+     //here thread  has lock of  X object
+     Y y = new Y();
+
+    synchronized(y){
+    //here thread  has lock of  X  and Y objects
+
+     Z z = new Z();
+     synchronized(z){
+     //here thread  has lock of  X, Y, and Z objects
+
+      ------------
+     -------------
+     }
+   }
+  }
+}
+X x = new X();
+x.m1();
+```
+9. What is synchronized statement?(interviee created terminology)
+
+The statement presents in synchronized method and synchronied block are called synchronized statement.
+
+
+### Inter Thread communication:
+
+The twi thread can communicate with each other by using: **wait(), notify() and notifyAll()**methods.
+
+The thread which is expecting the updation is responsible for wait() method, and the thread immediatly enter into waiting state.
+
+The thread which is responsible to perform updation after performing updation it is responsible to call notify() method,
+then waiting thread will get that notification, and continue its execution with those updated items.
+
+#### **wait(), notify() and notifyAll()**
+
+These methods are present in Object class but not in Thread class because thread can call these methods on any java object.
+
+To call these methods on any object, thread should be owner of that object that is, the thread should have lock of  that 
+object i.e. the thread should be in synchronized block.Hence, we can call these methods only from synchronized area(block)
+otherwise we will get runtime exception saying IllegalMonitorStateException.
+
+If a thread calls wait() method on any object it immediately releases the lock of that particular object and enter into waiting
+state. 
+
+If a thread calls notify() method on any object it releases the lock of that object but may not immediately.
+
+Except wait(), notify() and notifyAll() there is no other method where thread release the lock.
+
+| method | is thread release the lock|
+|------- |---------------|
+|yield()| No|
+|join()| No|
+|sleep()| No|
+|wait()| Yes|
+|notify()| Yes|
+|notifyAll()| Yes|
+
+```
+    public final native void notify();
+
+    public final native void notifyAll();
+
+    public final void wait() throws InterruptedException;
+
+    public final native void wait(long ms) throws InterruptedException;
+
+    public final void wait(long ms, int n) throws InterruptedException 
+```
+![](src/com/us/lot/images/threadcomm.png)
+
 
 
 
