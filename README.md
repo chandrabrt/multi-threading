@@ -1178,6 +1178,203 @@ a group of thread.
 In addition to threads a thread group can also sub-thread groups.
 The main advantage of maintaining thread in the form of thread group is we can perform common operation very easily.
 
+```
+Constructors:
+
+i) ThreadGroup g = new ThreadGroup(String gName); //creates a new thread group with the specified name. The parent of this new 
+group is the thread group of currently executing thread.
+e.g ThreadGroup g = new ThreadGrop("Firsgroup");
+
+ii) ThreadGroup g1 = new ThreadGroup(ThreadGroup parentGroup, String gName);
+e.g ThreadGroup g1 = new ThreadGroup(g, "Secondgroup")
+```
+```
+public class ThreadGroupExample {
+    public static void main(String[] args) {
+        ThreadGroup g = new ThreadGroup("first group");
+        System.out.println(g.getParent().getName());
+
+        ThreadGroup g1 = new ThreadGroup(g, "second thread");
+        System.out.println(g1.getParent().getName());
+    }
+}
+//output:
+main
+first group
+```
+```
+public class MyThread {
+    public static void main(String[] args) {
+        ThreadGroup system = Thread.currentThread().getThreadGroup().getParent();
+        Thread[] t = new Thread[system.activeCount()];
+        system.enumerate(t);
+        for (Thread t1: t){
+            System.out.println(t1.getName() + "....."+ t1.isDaemon());
+        }
+    }
+}
+//output:
+Reference Handler.....true
+Finalizer.....true
+Signal Dispatcher.....true
+main.....false
+Monitor Ctrl-Break.....true
+```
+
+#### java.util.concurrent.lock package:(this is the alternate to synchronize so now never use synchronized)
+
+The problems with traditional synchronized keyword:
+- we are not having any flexibility to try for the lock without waiting.
+- there is no maximum waiting time for a thread to get a lock so that thread will wait until get in the lock which may 
+create performance problem, which may cause deadlock.
+- If a thread releases the lock then which waiting thread will get that lock we having control of this.
+- There is no API to list out all waiting thread for a lock.
+- the synchronized keyword compulsory we have to use either at method level or within the method and it is not possible 
+to use across multiple methods.
+
+To overcome these problem SUN people introduced java.util.concurrent.lock package in 1.5 version onwards. It also provides
+several enhancement to the programmer to provide more control on concurrency.
+
+####Lock Interface
+
+Lock Object is similar to implicit lock acquired by a thread to execute synchronized method or synchronized block.
+
+Lock implementation provides more extensive operation than traditional implicit locks.
+```
+i) void lock(): we can use this method to acquared a lock. If the lock is already available then immediately current 
+thread will get that lock, if the lock is not already avaiable it will wait until get in the lock. It is the exactly same 
+behaviour of traditional synchronization keyword.
+
+ii) boolean tryLock(); 
+to acquired the lock without waiting. If the lock is available then the thread acquired that lock and returns the true and 
+if the lock is not available then this method returns false and can continue its execution without waiting. In this case the 
+thread never be enter into waiting state.
+
+if(l.tryLock()){
+  perform  safe operation;
+}else{
+perform alternate operation
+}
+
+iii) boolean tryLock(long time, TimeUnit unit) throws InterruptedException
+If a lock is available then the thread will get the lock and continue its execution. If the lock is not availble then
+the thread will wait until specified amount of time. Still if the lock is not available then the thread can continue its 
+execution.
+
+iv)  void lockInterruptibly() throws InterruptedException;
+Acquired the lock if it is available and returns immediately. If the lock is not avaiable then it will wait. While waiting 
+if the thread is interrupted then thread won't get the lock.
+
+v) void unlock();
+to release the lock. To call this method compulsary the current thread should me owner of the lock otherwise we will get 
+runtime exception saying IllegalMonitorStateException
+```
+
+#### ReentrantLock(reentrant means again and again)
+It is the implementation class of Lock interface and direct the child class of Object.
+
+Reentrant means a thread can acquired same lock multiple times without any issue.Internally reentrant lock increment threads
+personal count whenever we called lock method and the decrement count value whenever thread calls unlock method and the lock
+will be released whenever count reaches zero.
+
+```
+ReentrantLock l = new ReentrantLock();
+l.lock();
+l.lock();
+l.lock();
+l.unlock();
+l.unlock();
+l.unlock();
+
+constructors;
+i. ReentrantLock l = new ReentrantLock();// creates an instance of ReentrantLock
+ii. ReentrantLock l = new ReentrantLock(boolen fairness);// create ReentrantLock with given fairness policy. If the fairness is 
+true then longest waiting thread can acquired the lock if it is available i.e it follow FIFO policy. If a fairness is false
+then which waiting thread will get the chance we can't expect.
+The default value for fairness is false.
+```
+
+**Importance method of ReentrantLock**
+- void lock();
+- void lockInterruptibly() throws InterruptedException;
+- boolean tryLock();
+- boolean tryLock(long var1, TimeUnit var3) throws InterruptedException;
+- void unlock();
+
+- int getHoldCount()
+- public boolean isHeldByCurrentThread();
+- public final int getQueueLength();
+- protected Collection<Thread> getQueuedThreads();
+- final boolean isLocked();
+- public final boolean isFair();
+- protected Thread getOwner();
+```
+public class ReentrantLock2 {
+    public static void main(String[] args) {
+        ReentrantLock l = new ReentrantLock();
+        l.lock();
+        l.lock();
+        System.out.println(l.isLocked()); //true
+        System.out.println(l.isHeldByCurrentThread());// true
+        System.out.println(l.getQueueLength());//0
+
+        l.unlock();
+        System.out.println(l.getHoldCount());//1
+        System.out.println(l.isLocked());//true
+        l.unlock();
+        System.out.println(l.isLocked());//false
+        System.out.println(l.isFair());//false
+
+    }
+}
+```
+```
+public class ReentrantLockDemo {
+    public static void main(String[] args) {
+        Display d = new Display();
+        MyThread t1 = new MyThread(d, "chandra");
+        MyThread t2 = new MyThread(d, "Hari");
+        t1.start();
+        t2.start();
+    }
+}
+
+class Display{
+    ReentrantLock l = new ReentrantLock();
+    public void wish(String name){
+        l.lock();
+        for(int i= 0; i<=10; i++){
+            System.out.println("Good morning");
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println(name);
+        }
+        l.unlock();
+    }
+}
+
+class MyThread extends Thread{
+    Display d;
+    String name;
+
+    public MyThread(Display d, String name){
+        this.d = d;
+        this.name = name;
+    }
+
+    @Override
+    public void run() {
+        d.wish(name);
+    }
+}
+```
+
+### JAVA thread Pools(Executor Framework)
+
+
 
 
 
