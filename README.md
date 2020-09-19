@@ -1374,8 +1374,184 @@ class MyThread extends Thread{
 
 ### JAVA thread Pools(Executor Framework)
 
+Creating a new thread for every job may create performance on mermory problem. To overcome this we should go for thread
+pool.
 
+Thread pool is a pool of already created thread ready to do our job.
 
+Java 1.5 version introduces Thread pool framework to implement thread pool, also known as executor framework.
+
+We can create a thread pool and submit runnable job as follows:
+```
+ExecutorService service = Executors.newFixedThreadPool(3);
+service.submit(job);
+
+service.shutdown() //we can shoutdown executor service
+```
+```
+public class Demo {
+    public static void main(String[] args) {
+        MyRunnable[] jobs = {
+                new MyRunnable("chandra"),
+                new MyRunnable("Shaym"),
+                new MyRunnable("Hari"),
+                new MyRunnable("Ram"),
+                new MyRunnable("Gita"),
+                new MyRunnable("Sita"),
+        };
+        ExecutorService service = Executors.newFixedThreadPool(3);
+        for (MyRunnable job :jobs){
+            service.submit(job);
+        }
+        service.shutdown();
+    }
+}
+
+class MyRunnable implements Runnable {
+    String name;
+
+    public MyRunnable(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public void run() {
+        System.out.println(name + "...job started by thread: " + Thread.currentThread().getName());
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println(name + ".. job completed by thread: " + Thread.currentThread().getName());
+    }
+}
+//output:
+chandra...job started by thread: pool-1-thread-1
+Shaym...job started by thread: pool-1-thread-2
+Hari...job started by thread: pool-1-thread-3
+chandra.. job completed by thread: pool-1-thread-1
+Shaym.. job completed by thread: pool-1-thread-2
+Ram...job started by thread: pool-1-thread-1
+Gita...job started by thread: pool-1-thread-2
+Hari.. job completed by thread: pool-1-thread-3
+Sita...job started by thread: pool-1-thread-3
+Ram.. job completed by thread: pool-1-thread-1
+Gita.. job completed by thread: pool-1-thread-2
+Sita.. job completed by thread: pool-1-thread-3
+```
+
+Note: 
+
+While developing webserver on application server we can use thread pool concept. 
+
+#### Callable and Future
+
+- In the case of runnable job thread won't return anything after completing the job.
+- If a thread is required to return some result after execution then we should go for callable.
+- Callable interface contain only one method call
+```public Object call() throws Exception;```
+
+- If we submit the callable object(job) to executor then after completing the job thread returned an object of the type **Future**.
+That is Future can be used to retrieve the result from callable job.
+
+```
+public class CallableDemo {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        MyCallable[] jobs = {
+                new MyCallable(100),
+                new MyCallable(1000),
+                new MyCallable(10000),
+                new MyCallable(200),
+                new MyCallable(2000),
+                new MyCallable(3000),
+        };
+        ExecutorService service = Executors.newFixedThreadPool(3);
+        for (MyCallable job : jobs){
+            Future future = service.submit(job);
+            System.out.println(future.get());
+        }
+        service.shutdown();
+    }
+}
+
+class MyCallable implements Callable{
+    int num;
+
+    public MyCallable(int num){
+        this.num = num;
+    }
+
+    @Override
+    public Object call() throws Exception {
+        System.out.println(Thread.currentThread().getName() + " is.... responsible to find sum of first "+ num + "numbers");
+        int sum = 0;
+        for (int i=1 ; i<=num ; i++){
+            sum+= i;
+        }
+        return sum;
+    }
+}
+```
+
+### Java thread local
+
+- ThreadLocal class provide thread local variables.
+- Thread local class maintains value per thread basis.
+- Each thread local object maintain the separate value like userId, transactionId, for each thread that access that object.
+- Thread can access its a local value, can manipulate its value and even can remove its value.
+- In every part of the code which is executed by the thread we can access its local variable.
+
+- Eg.consider the servlet which invokes some business method. We have a requirement to generate unique transactionId for
+each and every request and we have to pass these transaction id  to the business method. For this requirement we can use 
+thread local to maintain separate transactionId for every request i.e for every thread.
+
+Note:
+- Thread local class introduced in 1.2 version and the enhance in 1.5 version.
+- ThreadLocal can be associated with Thread scope.
+- Total code which is executed by thread has access to the corresponding thread local variable.
+- A thread can access its own local varicables and can't access other threads local variables.
+- Once the thread enter into dead state all its local variable are by default eligible for garbage collections.
+
+```
+constructors:
+ThreadLocal tl = new ThreadLocal();
+
+methods:
+1. Object get();//returns the value of thread local variable associated with current thread.
+2. Object initialValue();//returns the initial value of ThreadLocal variable associated with current Thread.The default 
+implementation of this method returns null.  To customize initial value we have to override this method.
+3. void set(Object newValue)//to set a new value
+4. void remove()//to remove value of thread local associated with current thread
+```
+```
+public class Demo {
+    public static void main(String[] args) {
+        ThreadLocal tl = new ThreadLocal();
+        System.out.println(tl.get());//null
+        tl.set("chandra");
+        System.out.println(tl.get());//chandra
+        tl.remove();
+        System.out.println(tl.get());//null
+    }
+}
+
+overrriding initialValue method:
+public class Demo {
+    public static void main(String[] args) {
+        ThreadLocal tl = new ThreadLocal() {
+            @Override
+            public Object initialValue() {
+                return "abc";
+            }
+        };
+        System.out.println(tl.get());//abc
+        tl.set("chandra");
+        System.out.println(tl.get());//chandra
+        tl.remove();
+        System.out.println(tl.get());//abc
+    }
+}
+```
 
 
 
