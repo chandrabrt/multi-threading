@@ -1024,6 +1024,165 @@ Except wait(), notify() and notifyAll() there is no other method where thread re
 ```
 ![](src/com/us/lot/images/threadcomm.png)
 
+```
+public class ThreadA {
+    public static void main(String[] args) throws Exception {
+        ThreadB b = new ThreadB();
+        b.start();
+        synchronized (b){
+            System.out.println("1. Main thread calling the wait method");
+            b.wait();
+            System.out.println("4. Main thread got notification");
+            System.out.println(b.total);
+
+        }
+    }
+}
+
+class ThreadB extends Thread{
+    int total = 0;
+
+    @Override
+    public void run() {
+        synchronized (this){
+            System.out.println("2. child start calculation");
+            for (int i=1; i<=100; i++){
+                total+=i;
+            }
+            System.out.println("3. child thread giving notification");
+            this.notify();
+        }
+    }
+}
+//output:
+1. Main thread calling the wait method
+2. child start calculation
+3. child thread giving notification
+4. Main thread got notification
+5050
+```
+
+#### Producer-Consumer problem:
+
+- Producer thread is responsible to produce items to the queue and the consumer thread is responsible to consume items from
+the queue.
+
+- If the queue is empty then consumer thread will call wait() method and enter in waiting state.
+- After producing items to the queue producer thread is responsible to call notify() method then waiting consumer will get
+that notification and the continue its execution with the update items.
+
+```
+class ProducerThread{
+  produce(){
+   synchronized(Queue q){
+     produce items to the queue;
+     q.notify();
+  }
+ }
+}
+
+class ConsumerThread{
+  consume(){
+   synchronized(Queue q){
+     if(q is empty){
+       q.wait();
+     }else{
+     consumes items;
+    }
+  }
+ }
+}
+```
+
+#### Difference between notify() and notifyAll()
+
+- We can use notify() method to give the notification for only one waiting thread. If multiple threads are waiting then only
+one thread will be notify() and the remaining threads have to wait for further notification.
+Which thread will be notifying we can't expect it depends on JVM.
+
+- We can use use notifyAll() method to give the notification for all waiting thread of a particular object. Even though 
+multiple thread got notify the execution will perform one by one because threads are required lock and only one lock 
+is available.
+
+
+### Deadlock
+
+If two threads are waiting for each other for forever such a type of infinite waiting is called deadlock. Synchronized
+keyword is he only reason for deadlock situation. Hence, while using synchronization keyword we have to special care.
+
+There is no resolvation techniques for deadlock but there are several prevention technique are available.
+
+### Daemon Thread
+
+- The thread which are executing in the background are called daemon thread. E.g garbage collection, attach listener, signal
+dispatcher etc.
+
+- The main objective of daemon thread is to provide support for non-daemon thread(Main Thread).
+For eg. if the main thread runs with the low memory then JVM runs garbage collector(GC) to destory useless objects so that
+number of bytes free memory will be improved, with these free memory the main thread can continue its execution.
+
+- Usually, the daemon thread having low priority but based on our requirement daemon thread can run with high priority also.
+
+```
+public boolean isDaemon(); 
+public void setDaemon(boolean b); 
+```
+we can change the daemon nature of the thread by using setDaemon() method but changing daemon nature is possible 
+before starting of a thread only. After starting a thread if we are trying to change daemon nature then we will get runtime
+exception saying IllegalThreadStateException.
+
+**Default nature**: by default main thread is always non-daemon and for remaining thread daemon nature will be inherited
+from parent to child. That is, if the parent thread is daemon then automatically child thread is also daemon and the parent
+thread is non-daemon then child thread is also non-daemon.
+
+- It is impossible to change daemon nature of main thread because it is already started by JVM at the beginning.
+```
+public class Daemon {
+    public static void main(String[] args) {
+        System.out.println(Thread.currentThread().isDaemon());//false
+//        Thread.currentThread().setDaemon(true);// IllegalThreadStateException
+
+        MyThread t = new MyThread();
+        System.out.println(t.isDaemon());//false
+        t.setDaemon(true);
+        System.out.println(t.isDaemon());//true
+    }
+}
+
+class MyThread extends Thread{
+}
+```
+
+### Green thread
+
+Java multithreading concept is implemented by : **green thread model and native Os model**
+
+**Green thread model**: completly manages by JVM without taking underlying os support. Very few OS like Sun Solarist
+provide support for green thread model. It is deprecated.
+
+**native Os model**: the thread which is managed by the JVM with help of underlying OS.
+All windows based OS provide support for native os model.
+
+### how to stop thread?
+
+- stop(),suspend(),resume() //all methods are deprecated
+
+
+## Multithreading enhancement
+
+####ThreadGroup
+
+Based on functionality we can group thread into a single unit which is nothing but ThreadGroup i.e thrad group contains
+a group of thread.
+
+In addition to threads a thread group can also sub-thread groups.
+The main advantage of maintaining thread in the form of thread group is we can perform common operation very easily.
+
+
+
+
+
+
 
 
 
