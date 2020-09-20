@@ -1444,6 +1444,125 @@ Note:
 
 While developing webserver on application server we can use thread pool concept. 
 
+
+|Task Type | Ideal Pool Size| Considerations|
+|------- |--------|------|
+|CPU intensive|CPU core count|How many other applications(or executors/threads) are running on the same CPU|
+|IO intensive|High|Exact number will depend on rate of task submissions  and average  task will wait. Too many thread will increase  memory consumption too|
+
+#### Types of thread pool
+i. FixedThreadPool:
+``ExecutorService service = Executors.newFixedThreadPool(coreCount);``
+![](src/com/us/lot/images/fixed_thread_pool.png)
+```Example:
+public class CPUIntensiveDemo {
+    //based practice
+    public static void main(String[] args) {
+        //for cpu intensive task assign pool size == tolal number of core
+        int coreCount = Runtime.getRuntime().availableProcessors();
+        System.out.println(coreCount);
+
+        ExecutorService service = Executors.newFixedThreadPool(coreCount);
+
+        for (int i= 1; i<=10000; i++){
+            service.submit(new CPUIntensiveTask());
+        }
+        service.shutdown();
+    }
+
+    static class CPUIntensiveTask implements Runnable{
+        @Override
+        public void run() {
+            System.out.println("Some operations: "+ Thread.currentThread().getName());
+        }
+    }
+}
+```
+
+ii. CachedThreadPool: ```ExecutorService service = Executors.newCachedThreadPool();  used for short lived task```
+![](src/com/us/lot/images/cached_thread.png)
+```public class CPUIntensiveDemo {
+       //based practice
+       public static void main(String[] args) {
+           //for cpu intensive task assign pool size == tolal number of core
+           int coreCount = Runtime.getRuntime().availableProcessors();
+           System.out.println(coreCount);
+      
+           //for lot of short lived  tasks
+           ExecutorService service = Executors.newCachedThreadPool();
+   
+   
+           for (int i= 1; i<=10000; i++){
+               service.submit(new CPUIntensiveTask());
+           }
+           service.shutdown();
+       }
+   
+       static class CPUIntensiveTask implements Runnable{
+           @Override
+           public void run() {
+               System.out.println("Some operations: "+ Thread.currentThread().getName());
+           }
+       }
+   }
+```
+
+iii. ScheduledThreadPool:
+![](src/com/us/lot/images/sceduled_thread_pool.png)
+```public class ScheduleThreadPoolDemo {
+       public static void main(String[] args) {
+           //for scheduling of task
+           ScheduledExecutorService service = Executors.newScheduledThreadPool(10);
+   
+           // task to run after 10 second delay
+           service.schedule(new ScheduleThreadPool(), 10, TimeUnit.SECONDS);
+   
+           //task to run repeatedly every 10 seconds
+           service.scheduleAtFixedRate(new ScheduleThreadPool(), 15, 10, TimeUnit.SECONDS);
+
+           //task to run repeatedly 10 seconds after previous task completes
+           service.scheduleWithFixedDelay(new ScheduleThreadPool(), 15, 10, TimeUnit.SECONDS);
+       }
+   
+       static class ScheduleThreadPool implements Runnable {
+           @Override
+           public void run() {
+               //task that needs to run based on reschedules
+               System.out.println("reschedule: " + Thread.currentThread().getName());
+           }
+       }
+   }
+```
+
+iv. SingleThreadPool:
+![](src/com/us/lot/images/singleThreaded.png)
+This is the similar to fixed thread pool but this type of thread pool is used when if task 1 is always run before task two.
+```
+public class SingleThreadDemo {
+    public static void main(String[] args) {
+
+        ExecutorService service = Executors.newSingleThreadExecutor();
+        
+        for (int i= 1; i<=100; i++){
+            service.submit(new CPUIntensiveDemo.CPUIntensiveTask());
+        }
+        service.shutdown();
+    }
+
+    static class SingleThreadPool implements Runnable{
+        @Override
+        public void run() {
+            System.out.println("Some operations: "+ Thread.currentThread().getName());
+        }
+    }
+}
+```
+
+#### ThreadPoolExecutor constructor and Lifecycle methods
+
+
+
+
 #### Callable and Future
 
 - In the case of runnable job thread won't return anything after completing the job.
