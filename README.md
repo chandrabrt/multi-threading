@@ -1611,6 +1611,45 @@ class MyCallable implements Callable{
     }
 }
 ```
+![](src/com/us/lot/images/callable.png)
+
+```Example:
+public class CallableDemo {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+        //submit the task for execution
+        List<Future> allFutures = new ArrayList<>();
+        for (int i=0; i<=100; i++){
+            Future<Integer> future = service.submit(new Task());
+            allFutures.add(future);
+        }
+        //100 futures with 100 placeholder
+
+        //perfom  some un-related operations
+        for (int i=0; i<=100; i++){
+            Future<Integer> future = allFutures.get(i);
+            Integer result = future.get(); //blocking operations
+            System.out.println("Result of future # "+ i+ "="+ result);
+        }
+    }
+
+    static class Task implements Callable<Integer> {
+
+        @Override
+        public Integer call() throws Exception {
+            Thread.sleep(3000);
+            return new Random().nextInt();
+        }
+    }
+```
+some methods:
+```
+1. future.get() and future.get(int timeout, Timeout timeout)
+2. future.cancel()//cancel the task
+3. future.isCancelled();// returns true if task was cancelled
+4. future.isDone(); //returns true if  task is completed(successfully or otherwise)
+```
 
 ### Java thread local
 
